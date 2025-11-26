@@ -18,7 +18,6 @@ public class TransactionsEntity{
     private UUID tradeId;
     private UUID portfolioId;
     private String cusipId;
-    private String sector;
     private TradeSide side;
     private BigDecimal buyPrice;
     private BigDecimal sellPrice;
