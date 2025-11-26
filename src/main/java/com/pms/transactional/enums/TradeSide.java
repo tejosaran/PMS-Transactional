@@ -1,6 +1,6 @@
-package com.pms.transactional.enum;
+package com.pms.transactional.enums;
 
-public enum TradeSide{
+public enum TradeSide {
     BUY,
     SELL
 }
