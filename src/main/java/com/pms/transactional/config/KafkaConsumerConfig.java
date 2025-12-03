@@ -11,6 +11,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 
+import com.pms.transactional.TradeProto;
 import com.pms.transactional.TransactionProto;
 
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
@@ -37,9 +38,9 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String,  TransactionProto> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, TransactionProto> kafkaListenerContainerFactory() {
 
-        ConcurrentKafkaListenerContainerFactory<String,  TransactionProto> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, TransactionProto> factory = new ConcurrentKafkaListenerContainerFactory<>();
 
         factory.setConsumerFactory(consumerFactory());
 
@@ -50,4 +51,28 @@ public class KafkaConsumerConfig {
         return factory;
     }
 
+    @Bean
+    public Map<String, Object> tradeConsumerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaProtobufDeserializer.class);
+        props.put("schema.registry.url", "http://localhost:8081");
+        props.put("specific.protobuf.value.type", TradeProto.class.getName());
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        return props;
+    }
+
+    @Bean
+    public ConsumerFactory<String, TradeProto> tradeConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(tradeConsumerConfigs());
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, TradeProto> tradekafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, TradeProto> factory = new ConcurrentKafkaListenerContainerFactory<>();
+
+        factory.setConsumerFactory(tradeConsumerFactory());
+        return factory;
+    }
 }

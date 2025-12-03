@@ -13,6 +13,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 
+import com.pms.transactional.TradeProto;
 import com.pms.transactional.TransactionProto;
 
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer;
@@ -21,8 +22,16 @@ import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer;
 public class KafkaProducerConfig {
 
     @Bean
-    public NewTopic createTopic() {
+    public NewTopic createTopic1() {
         return TopicBuilder.name("transactions-topic")
+                .partitions(5)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic createTopic2() {
+        return TopicBuilder.name("validatedtrades-topic")
                 .partitions(5)
                 .replicas(1)
                 .build();
@@ -43,9 +52,19 @@ public class KafkaProducerConfig {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
-    @Bean
+    @Bean(name = "transactionKafkaTemplate")
     public KafkaTemplate<String, TransactionProto> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, TradeProto> tradeProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    }
+
+    @Bean(name = "tradeKafkaTemplate")
+    public KafkaTemplate<String, TradeProto> tradeKafkaTemplate() {
+        return new KafkaTemplate<>(tradeProducerFactory());
     }
 
 }
