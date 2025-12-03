@@ -33,7 +33,7 @@ public class TradesEntity {
     @Column(name = "symbol", nullable = false, length = 255)
     private String symbol;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "side", nullable = false, length = 50)
     private TradeSide side;
 

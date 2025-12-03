@@ -5,16 +5,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import com.pms.transactional.entities.TransactionsEntity;
+import com.pms.transactional.TransactionProto;
 
 @Service
 public class KafkaMessageListner {
 
     Logger logger = LoggerFactory.getLogger(KafkaMessageListner.class);
 
-    @KafkaListener(topics = "transactions-topic", groupId = "transactions", containerFactory = "kafkaListenerContainerFactory")
-    public void consume1(TransactionsEntity transactions) {
-        logger.info("Consumer message: " + transactions.toString());
+    @KafkaListener( topics = "transactions-topic",
+                    groupId = "transactions", 
+                    containerFactory = "kafkaListenerContainerFactory")
+    public void consume1(TransactionProto transaction) {
+         try {
+            logger.info("Consumer message (parsed): {}", transaction);
+        } catch (Exception e) {
+            logger.error("Failed to parse protobuf", e);
+        }   
     }
 
     // @KafkaListener(topics = "transactions-topic", groupId = "transactions",

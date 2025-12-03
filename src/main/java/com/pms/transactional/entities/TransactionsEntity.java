@@ -1,12 +1,7 @@
 package com.pms.transactional.entities;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.pms.transactional.enums.TradeSide;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,7 +29,6 @@ public class TransactionsEntity {
 
     @ManyToOne
     @JoinColumn(name = "trade_id")
-
     private TradesEntity trade;
 
     @Column(name = "buy_price", precision = 19, scale = 4)
@@ -43,8 +37,6 @@ public class TransactionsEntity {
     @Column(name = "sell_price", precision = 19, scale = 4)
     private BigDecimal sellPrice;
 
-    @Column(name = "quantity", nullable = false)
-    private long quantity;
 
     @Column(name = "remaining_quantity", nullable = false)
     private long remainingQuantity;

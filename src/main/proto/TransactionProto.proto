@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package transactional;
+
+option java_package = "com.pms.transactional";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+enum TradeSideProto {
+  TRADE_SIDE_UNKNOWN = 0; 
+  BUY = 1;
+  SELL = 2;
+}
+
+message TradeProto {
+  string trade_id = 1;
+  string portfolio_id = 2;
+  string symbol = 3;
+  TradeSideProto side = 4;
+  double price_per_stock = 5; 
+  int64 quantity = 6;
+  google.protobuf.Timestamp timestamp = 7;
+}
+
+message TransactionProto {
+  string transaction_id = 1; 
+  string buy_price = 2;
+  string sell_price = 3;
+  int64 remaining_quantity = 4;
+  TradeProto trade = 5;
+}
