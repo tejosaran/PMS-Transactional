@@ -28,5 +28,6 @@ message TransactionProto {
   string buy_price = 2;
   string sell_price = 3;
   int64 remaining_quantity = 4;
-  TradeProto trade = 5;
+  int64 sell_quantity = 5;
+  TradeProto trade = 6;
 }

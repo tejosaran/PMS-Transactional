@@ -4,26 +4,18 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Data
-@Entity
-@Table(name = "transactions")
-public class TransactionsEntity {
-
+public class OutboxEvents{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "transaction_outbox_id")
+    private UUID transactionOutboxId;
+
     @Column(name = "transaction_id")
     private UUID transactionId;
 
@@ -37,9 +29,10 @@ public class TransactionsEntity {
     @Column(name = "sell_price", precision = 19, scale = 4)
     private BigDecimal sellPrice;
 
-    @Column(name = "remaining_quantity")
+    @Column(name = "remaining_quantity", nullable = false)
     private long remainingQuantity;
 
-    @Column(name="sell_quantity")
-    private long sellQuantity;
+    @Column(name = "status", nullable = false)
+    private String status;
+
 }

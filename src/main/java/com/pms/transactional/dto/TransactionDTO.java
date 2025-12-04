@@ -15,5 +15,6 @@ public class TransactionDTO{
     private BigDecimal buyPrice;
     private BigDecimal sellPrice;
     private long remainingQuantity;
+    private long sellQuantity;
     private TradeDTO trade;
 }
