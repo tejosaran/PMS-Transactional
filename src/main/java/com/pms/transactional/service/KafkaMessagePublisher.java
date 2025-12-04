@@ -10,9 +10,9 @@ import com.pms.transactional.TransactionProto;
 @Service
 public class KafkaMessagePublisher {
 
+    // @Qualifier("transactionKafkaTemplate")
     @Autowired
-    @Qualifier("transactionKafkaTemplate")
-    private KafkaTemplate<String, TransactionProto> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     // public void publishMessage(ValidatedTrade trade) {
     // try {

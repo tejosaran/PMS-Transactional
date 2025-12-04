@@ -48,23 +48,33 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, TransactionProto> producerFactory() {
+    public ProducerFactory<String, ?> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
-    @Bean(name = "transactionKafkaTemplate")
-    public KafkaTemplate<String, TransactionProto> kafkaTemplate() {
+    @Bean // default + universal template
+    public KafkaTemplate<String, ?> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
-    @Bean
-    public ProducerFactory<String, TradeProto> tradeProducerFactory() {
-        return new DefaultKafkaProducerFactory<>(producerConfigs());
-    }
+    // @Bean
+    // public ProducerFactory<String, TransactionProto> producerFactory() {
+    // return new DefaultKafkaProducerFactory<>(producerConfigs());
+    // }
 
-    @Bean(name = "tradeKafkaTemplate")
-    public KafkaTemplate<String, TradeProto> tradeKafkaTemplate() {
-        return new KafkaTemplate<>(tradeProducerFactory());
-    }
+    // @Bean(name = "transactionKafkaTemplate")
+    // public KafkaTemplate<String, TransactionProto> kafkaTemplate() {
+    // return new KafkaTemplate<>(producerFactory());
+    // }
+
+    // @Bean
+    // public ProducerFactory<String, TradeProto> tradeProducerFactory() {
+    // return new DefaultKafkaProducerFactory<>(producerConfigs());
+    // }
+
+    // @Bean(name = "tradeKafkaTemplate")
+    // public KafkaTemplate<String, TradeProto> tradeKafkaTemplate() {
+    // return new KafkaTemplate<>(tradeProducerFactory());
+    // }
 
 }
