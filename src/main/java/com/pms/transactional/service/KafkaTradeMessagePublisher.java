@@ -11,14 +11,14 @@ import com.pms.transactional.TransactionProto;
 @Service
 public class KafkaTradeMessagePublisher {
 
+    // @Qualifier("tradeKafkaTemplate")
     @Autowired
-    @Qualifier("tradeKafkaTemplate")
-    private KafkaTemplate<String, TradeProto> tradeKafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     public void publishTradeMessage(String key, TradeProto trade) {
         System.out.println("Hi from publisher");
 
-        tradeKafkaTemplate.send("validatedtrades-topic", key, trade) // ✔ FIXED
+        kafkaTemplate.send("validatedtrades-topic", key, trade) // ✔ FIXED
                 .whenComplete((res, ex) -> {
                     if (ex == null) {
                         System.out.println("Kafka Offset: " + res.getRecordMetadata());
