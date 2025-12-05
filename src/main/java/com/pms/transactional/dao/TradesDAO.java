@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import com.pms.transactional.entities.TradesEntity;
 
 @Repository
-public interface TradesDAO extends JpaRepository<TradesEntity, UUID> {
+public interface TradesDao extends JpaRepository<TradesEntity, UUID> {
 
 }

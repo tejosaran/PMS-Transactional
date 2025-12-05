@@ -9,8 +9,7 @@ import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
 
 import com.pms.transactional.TradeProto;
-import com.pms.transactional.TransactionProto;
-import com.pms.transactional.dao.TradesDAO;
+import com.pms.transactional.dao.TradesDao;
 import com.pms.transactional.entities.TradesEntity;
 import com.pms.transactional.mapper.TradeMapper;
 
@@ -20,7 +19,7 @@ public class KafkaTradeMessageListner {
     Logger logger = LoggerFactory.getLogger(KafkaMessageListner.class);
 
     @Autowired
-    private TradesDAO tradesdao;
+    private TradesDao tradesDao;
 
     @Autowired
     private TradeMapper mapper;
@@ -31,7 +30,7 @@ public class KafkaTradeMessageListner {
         try {
             logger.info("Consumer message (parsed): {}", trade);
             TradesEntity e = mapper.toEntity(trade);
-            tradesdao.save(e);
+            tradesDao.save(e);
             logger.info("Saved trade to DB: {}", e.getTradeId());
 
         } catch (Exception e) {
