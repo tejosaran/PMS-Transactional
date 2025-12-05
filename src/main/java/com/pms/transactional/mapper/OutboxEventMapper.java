@@ -15,13 +15,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OutboxEventMapper{
 
-    private final ObjectMapper objectMapper;
-
     public OutboxEventEntity toEntity(TransactionsEntity transaction) throws JsonProcessingException{
         OutboxEventEntity entity = new OutboxEventEntity();
+
+
+
         entity.setAggregateId(transaction.getTransactionId());
         entity.setCreatedAt(LocalDateTime.now());
-        entity.setPayload(objectMapper.writeValueAsString(transaction));
+         
         entity.setStatus("PENDING");
         return entity;
     }

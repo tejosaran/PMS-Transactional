@@ -30,7 +30,7 @@ public class OutboxEventEntity{
 
     @Lob
     @Column(name = "payload")
-    private Byte[] payload;
+    private byte[] payload;
 
     @Column(name = "status", nullable = false)
     private String status;

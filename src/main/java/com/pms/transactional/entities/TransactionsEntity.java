@@ -38,8 +38,8 @@ public class TransactionsEntity {
     private BigDecimal sellPrice;
 
     @Column(name = "remaining_quantity")
-    private long remainingQuantity;
+    private Long remainingQuantity;
 
     @Column(name="sell_quantity")
-    private long sellQuantity;
+    private Long sellQuantity;
 }
