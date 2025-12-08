@@ -15,11 +15,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="outbox_events")
+@Table(name = "outbox_events")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class OutboxEventEntity{
+public class OutboxEventEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "transaction_outbox_id")
@@ -28,8 +28,7 @@ public class OutboxEventEntity{
     @Column(name = "aggregate_id")
     private UUID aggregateId;
 
-    @Lob
-    @Column(name = "payload")
+    @Column(name = "payload", nullable = false)
     private byte[] payload;
 
     @Column(name = "status", nullable = false)
