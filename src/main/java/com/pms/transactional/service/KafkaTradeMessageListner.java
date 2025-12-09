@@ -10,7 +10,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 
 import com.pms.transactional.TradeProto;
-import com.pms.transactional.TradeSideProto;
 import com.pms.transactional.dao.TradesDao;
 import com.pms.transactional.mapper.TradeMapper;
 
@@ -32,14 +31,13 @@ public class KafkaTradeMessageListner {
     @KafkaListener(topics = "validatedtrades-topic", groupId = "trades", containerFactory = "tradekafkaListenerContainerFactory")
     public void consume2(TradeProto trade) {
             logger.info("Consumer message (parsed): {}", trade);
-            if (trade.getSide() == TradeSideProto.BUY) {
+            if("BUY".equalsIgnoreCase(trade.getSide())){
                 System.out.println("It is a buy trade");
                 transactionService.handleBuy(trade);
-            } else if (trade.getSide() == TradeSideProto.SELL) {
+            }else if("SELL".equalsIgnoreCase(trade.getSide())){
                 System.out.println("It is a sell trade");
                 transactionService.handleSell(trade);
             }
-
     }
 
     @DltHandler

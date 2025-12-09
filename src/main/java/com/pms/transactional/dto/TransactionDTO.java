@@ -13,8 +13,6 @@ import lombok.NoArgsConstructor;
 public class TransactionDTO{
     private UUID transactionId;
     private BigDecimal buyPrice;
-    private BigDecimal sellPrice;
-    private long remainingQuantity;
-    private long sellQuantity;
+    private long quantity;
     private TradeDTO trade;
 }

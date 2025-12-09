@@ -34,12 +34,6 @@ public class TransactionsEntity {
     @Column(name = "buy_price", precision = 19, scale = 4)
     private BigDecimal buyPrice;
 
-    @Column(name = "sell_price", precision = 19, scale = 4)
-    private BigDecimal sellPrice;
-
-    @Column(name = "remaining_quantity")
-    private Long remainingQuantity;
-
-    @Column(name="sell_quantity")
-    private Long sellQuantity;
+    @Column(name="quantity")
+    private Long quantity;
 }

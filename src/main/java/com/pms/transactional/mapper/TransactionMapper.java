@@ -7,9 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.protobuf.Timestamp;
 import com.pms.transactional.TradeProto;
-import com.pms.transactional.TradeSideProto;
 import com.pms.transactional.TransactionProto;
-import com.pms.transactional.entities.TradesEntity;
 import com.pms.transactional.entities.TransactionsEntity;
 
 @Component
@@ -18,24 +16,24 @@ public class TransactionMapper{
     @Autowired
     TradeMapper tradeMapper;
 
-    public TransactionsEntity toEntity(TransactionProto transaction){
-        TransactionsEntity entity = new TransactionsEntity();
-        entity.setBuyPrice(new java.math.BigDecimal(transaction.getSellPrice()));
-        entity.setSellPrice(new java.math.BigDecimal(transaction.getSellPrice()));
-        entity.setRemainingQuantity(transaction.getRemainingQuantity());
-        entity.setSellQuantity(transaction.getSellQuantity());
+    // public TransactionsEntity toEntity(TransactionProto transaction){
+    //     TransactionsEntity entity = new TransactionsEntity();
+    //     entity.setBuyPrice(new java.math.BigDecimal(transaction.getSellPrice()));
+    //     entity.setRemainingQuantity(transaction.getRemainingQuantity());
+    //     entity.setSellQuantity(transaction.getSellQuantity());
 
-        TradesEntity trade = tradeMapper.toEntity(transaction.getTrade());
-        entity.setTrade(trade);
-        return entity;
-    }
+    //     TradesEntity trade = tradeMapper.toEntity(transaction.getTrade());
+        
+    //     entity.setTrade(trade);
+    //     return entity;
+    // }
     
     public TransactionProto toProto(TransactionsEntity transaction){
         TradeProto trade = TradeProto.newBuilder()
                             .setTradeId(transaction.getTrade().getTradeId().toString())
                             .setPortfolioId(transaction.getTrade().getPortfolioId().toString())
                             .setSymbol(transaction.getTrade().getSymbol())
-                            .setSide(TradeSideProto.valueOf(transaction.getTrade().getSide().name()))
+                            .setSide(transaction.getTrade().getSide().name())
                             .setPricePerStock(transaction.getTrade().getPricePerStock().doubleValue())
                             .setQuantity(transaction.getTrade().getQuantity())
                             .setTimestamp(Timestamp.newBuilder()
@@ -46,11 +44,12 @@ public class TransactionMapper{
 
         TransactionProto transactionProto = TransactionProto.newBuilder()
                                         .setTransactionId(transaction.getTransactionId().toString())
-                                        .setBuyPrice(transaction.getBuyPrice() == null ? "0" :transaction.getBuyPrice().toPlainString())
-                                        .setSellPrice(transaction.getSellPrice() == null ? "0" : transaction.getSellPrice().toPlainString())
-                                        .setRemainingQuantity(transaction.getRemainingQuantity() == null ? 0: transaction.getRemainingQuantity())
-                                        .setSellQuantity(transaction.getSellQuantity() == null ? 0 :transaction.getSellQuantity().longValue())
-                                        .setTrade(trade)
+                                        .setPortfolioId(transaction.getTrade().getPortfolioId().toString())
+                                        .setSymbol(transaction.getTrade().getSymbol())
+                                        .setSide(transaction.getTrade().getSide().name())
+                                        .setBuyPrice(transaction.getBuyPrice() == null ? "NA" :transaction.getBuyPrice().toPlainString())
+                                        .setSellPrice(transaction.getTrade().getSide().name() == "SELL" ? transaction.getTrade().getPricePerStock().toString() : "NA")
+                                        .setQuantity(transaction.getQuantity())
                                         .build();
         return transactionProto;
     }

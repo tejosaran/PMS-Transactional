@@ -14,7 +14,7 @@ public interface TransactionDao extends JpaRepository<TransactionsEntity, UUID>{
                 SELECT tx FROM TransactionsEntity tx
                 JOIN TradesEntity t ON tx.trade.tradeId = t.tradeId
                 WHERE t.side = :side  
-                  AND tx.remainingQuantity > 0
+                  AND tx.quantity > 0
                   AND t.portfolioId = :pid
                   AND t.symbol = :symbol
                 ORDER BY t.timestamp ASC

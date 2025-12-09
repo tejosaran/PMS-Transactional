@@ -48,15 +48,10 @@ public class KafkaConsumerConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, TransactionProto> kafkaListenerContainerFactory() {
-
         ConcurrentKafkaListenerContainerFactory<String, TransactionProto> factory = new ConcurrentKafkaListenerContainerFactory<>();
-
         factory.setConsumerFactory(consumerFactory());
-
         factory.setConcurrency(5);
-
         factory.getContainerProperties().setPollTimeout(3000);
-
         return factory;
     }
 
@@ -81,8 +76,9 @@ public class KafkaConsumerConfig {
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, TradeProto> tradekafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, TradeProto> factory = new ConcurrentKafkaListenerContainerFactory<>();
-
         factory.setConsumerFactory(tradeConsumerFactory());
+        factory.setConcurrency(5);
+        factory.getContainerProperties().setPollTimeout(3000);
         return factory;
     }
 }

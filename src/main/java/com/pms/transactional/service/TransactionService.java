@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,9 +23,6 @@ import com.pms.transactional.mapper.TradeMapper;
 import com.pms.transactional.mapper.TransactionMapper;
 
 import jakarta.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 public class TransactionService {
@@ -67,9 +66,7 @@ public class TransactionService {
         TransactionsEntity buyTxn = new TransactionsEntity();
         buyTxn.setTrade(buyTrade);
         buyTxn.setBuyPrice(null);
-        buyTxn.setSellPrice(null);
-        buyTxn.setSellQuantity(null);
-        buyTxn.setRemainingQuantity(trade.getQuantity());
+        buyTxn.setQuantity(trade.getQuantity());
 
         transactionDao.save(buyTxn);
 
@@ -80,7 +77,6 @@ public class TransactionService {
         outboxEventEntity.setPayload(transactionProto.toByteArray());
         outboxEventEntity.setStatus("PENDING");
         outboxEventEntity.setCreatedAt(LocalDateTime.now());
-
         outboxEventsDao.save(outboxEventEntity);
     }
 
@@ -107,7 +103,7 @@ public class TransactionService {
                 sellTrade.getSymbol(), TradeSide.valueOf("BUY"));
         long sellQty = sellTrade.getQuantity();
         long totalAvailable = buyList.stream()
-                .mapToLong(TransactionsEntity::getRemainingQuantity)
+                .mapToLong(TransactionsEntity::getQuantity)
                 .sum();
 
         if (totalAvailable < sellQty) {
@@ -120,20 +116,17 @@ public class TransactionService {
             if (sellQty == 0)
                 break;
 
-            long available = buyTx.getRemainingQuantity();
+            long available = buyTx.getQuantity();
             long matchedQty = Math.min(available, sellQty);
 
-            buyTx.setRemainingQuantity(available - matchedQty);
+            buyTx.setQuantity(available - matchedQty);
             transactionDao.save(buyTx);
 
             TransactionsEntity sellTxn = new TransactionsEntity();
 
             sellTxn.setTrade(sellTrade);
             sellTxn.setBuyPrice(buyTx.getTrade().getPricePerStock());
-            sellTxn.setSellPrice(sellTrade.getPricePerStock());
-            sellTxn.setSellQuantity(matchedQty);
-            sellTxn.setRemainingQuantity(null);
-
+            sellTxn.setQuantity(matchedQty);
             transactionDao.save(sellTxn);
 
             sellQty -= matchedQty;

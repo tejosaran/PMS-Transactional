@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pms.transactional.TradeProto;
 import static com.pms.transactional.TradeProto.newBuilder;
-import com.pms.transactional.TradeSideProto;
 import com.pms.transactional.TransactionProto;
 import com.pms.transactional.dto.TradeDTO;
 import com.pms.transactional.dto.TransactionDTO;
@@ -30,18 +29,18 @@ public class EventController {
     @Autowired
     private KafkaTradeMessagePublisher tradePublisher;
 
-    @PostMapping("/transactions/publish")
-    public ResponseEntity<?> publishMessage(@RequestBody TransactionDTO transaction) {
-        System.out.println("Hello");
-        try {
-            TransactionProto txn = convertDTOToProto(transaction);
-            publisher.publishMessage(transaction.getTrade().getPortfolioId().toString(), txn);
-            return ResponseEntity.ok("Message published successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to publish message: " + e.getMessage());
-        }
-    }
+    // @PostMapping("/transactions/publish")
+    // public ResponseEntity<?> publishMessage(@RequestBody TransactionDTO transaction) {
+    //     System.out.println("Hello");
+    //     try {
+    //         TransactionProto txn = convertDTOToProto(transaction);
+    //         publisher.publishMessage(transaction.getTrade().getPortfolioId().toString(), txn);
+    //         return ResponseEntity.ok("Message published successfully");
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body("Failed to publish message: " + e.getMessage());
+    //     }
+    // }
 
     @PostMapping("/trades/publish")
     public ResponseEntity<?> publishTradeMessage(@RequestBody TradeDTO trade) {
@@ -60,34 +59,34 @@ public class EventController {
         }
     }
 
-    private TransactionProto convertDTOToProto(TransactionDTO transaction) {
-        return TransactionProto.newBuilder()
-                .setTransactionId(transaction.getTransactionId().toString())
-                .setBuyPrice(transaction.getBuyPrice().toPlainString()) 
-                .setSellPrice(transaction.getSellPrice().toPlainString())
-                .setRemainingQuantity(transaction.getRemainingQuantity())
-                .setSellQuantity(transaction.getSellQuantity())
-                .setTrade(newBuilder()
-                        .setTradeId(transaction.getTrade().getTradeId().toString())
-                        .setPortfolioId(transaction.getTrade().getPortfolioId().toString())
-                        .setSymbol(transaction.getTrade().getSymbol())
-                        .setSide(com.pms.transactional.TradeSideProto.valueOf(transaction.getTrade().getSide().name()))
-                        .setPricePerStock(transaction.getTrade().getPricePerStock().doubleValue())
-                        .setQuantity(transaction.getTrade().getQuantity())
-                        .setTimestamp(com.google.protobuf.Timestamp.newBuilder()
-                                .setSeconds(transaction.getTrade().getTimestamp().toEpochSecond(ZoneOffset.UTC))
-                                .setNanos(transaction.getTrade().getTimestamp().getNano())
-                                .build())
-                        .build())
-                .build();
-    }
+    // private TransactionProto convertDTOToProto(TransactionDTO transaction) {
+    //     return TransactionProto.newBuilder()
+    //             .setTransactionId(transaction.getTransactionId().toString())
+    //             .setBuyPrice(transaction.getBuyPrice().toPlainString()) 
+    //             .setSellPrice(transaction.getSellPrice().toPlainString())
+    //             .setRemainingQuantity(transaction.getRemainingQuantity())
+    //             .setSellQuantity(transaction.getSellQuantity())
+    //             .setTrade(newBuilder()
+    //                     .setTradeId(transaction.getTrade().getTradeId().toString())
+    //                     .setPortfolioId(transaction.getTrade().getPortfolioId().toString())
+    //                     .setSymbol(transaction.getTrade().getSymbol())
+    //                     .setSide(com.pms.transactional.TradeSideProto.valueOf(transaction.getTrade().getSide().name()))
+    //                     .setPricePerStock(transaction.getTrade().getPricePerStock().doubleValue())
+    //                     .setQuantity(transaction.getTrade().getQuantity())
+    //                     .setTimestamp(com.google.protobuf.Timestamp.newBuilder()
+    //                             .setSeconds(transaction.getTrade().getTimestamp().toEpochSecond(ZoneOffset.UTC))
+    //                             .setNanos(transaction.getTrade().getTimestamp().getNano())
+    //                             .build())
+    //                     .build())
+    //             .build();
+    // }
 
     private TradeProto convertDTOToProto(TradeDTO trade) {
         return TradeProto.newBuilder()
                 .setTradeId(trade.getTradeId().toString())
                 .setPortfolioId(trade.getPortfolioId().toString())
                 .setSymbol(trade.getSymbol())
-                .setSide(TradeSideProto.valueOf(trade.getSide().name()))
+                .setSide(trade.getSide().name())
                 .setPricePerStock(trade.getPricePerStock().doubleValue())
                 .setQuantity(trade.getQuantity())
                 .setTimestamp(

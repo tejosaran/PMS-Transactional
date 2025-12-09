@@ -21,8 +21,7 @@ public class TradeMapper {
         e.setTradeId(UUID.fromString(t.getTradeId()));
         e.setPortfolioId(UUID.fromString(t.getPortfolioId()));
         e.setSymbol(t.getSymbol());
-        e.setSide(TradeSide.valueOf(t.getSide().name()));
-
+        e.setSide(TradeSide.valueOf(t.getSide()));
         e.setPricePerStock(new java.math.BigDecimal(t.getPricePerStock()));
         e.setQuantity(t.getQuantity());
 
