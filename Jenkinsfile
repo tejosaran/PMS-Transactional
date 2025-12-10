@@ -31,7 +31,8 @@ pipeline {
        stage('Build Docker Image') {
     steps {
         sh """
-            docker build --progress=plain -t ${DOCKERHUB_REPO}:${IMAGE_TAG} .
+           docker build --progress=plain --no-cache -t ${DOCKERHUB_REPO}:${IMAGE_TAG} .
+
         """
     }
 }
