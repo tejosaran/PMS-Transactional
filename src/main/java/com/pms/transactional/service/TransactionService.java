@@ -19,6 +19,7 @@ import com.pms.transactional.entities.OutboxEventEntity;
 import com.pms.transactional.entities.TradesEntity;
 import com.pms.transactional.entities.TransactionsEntity;
 import com.pms.transactional.enums.TradeSide;
+import com.pms.transactional.exceptions.InvalidTradeException;
 import com.pms.transactional.mapper.TradeMapper;
 import com.pms.transactional.mapper.TransactionMapper;
 
@@ -81,6 +82,7 @@ public class TransactionService{
         UUID tradeId = UUID.fromString(trade.getTradeId());
 
         if (tradesDao.existsById(tradeId)) {
+            logger.error("Trade with ID {} already exists. Rejecting duplicate trade.", tradeId);
             return;
         }
 
@@ -99,9 +101,22 @@ public class TransactionService{
                 transactionDao.findBuyOrdersFIFO(
                         sellTrade.getPortfolioId(),
                         sellTrade.getSymbol(),
-                        TradeSide.BUY);
+                        TradeSide.BUY,
+                        sellTrade.getTimestamp());
 
         long qtyToSell = sellTrade.getQuantity();
+
+        long totalAvailable = buyList.stream()
+                                     .mapToLong(TransactionsEntity::getQuantity)
+                                     .sum();
+
+        if (totalAvailable < qtyToSell) {
+            throw new InvalidTradeException(
+                    "Insufficient quantity. Available=" + totalAvailable +
+                    ", Required=" + qtyToSell +
+                    ", TradeId=" + trade.getTradeId()
+            );
+        }
 
         for (TransactionsEntity buyTx : buyList) {
 
@@ -110,7 +125,7 @@ public class TransactionService{
             long matchedQty = Math.min(available, qtyToSell);
 
             buyTx.setQuantity(available - matchedQty);
-            txns.add(buyTx);
+            transactionDao.save(buyTx);
 
             TransactionsEntity sellTxn = new TransactionsEntity();
             sellTxn.setTrade(sellTrade);

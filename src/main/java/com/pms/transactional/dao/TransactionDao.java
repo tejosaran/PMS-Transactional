@@ -1,5 +1,6 @@
 package com.pms.transactional.dao;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +18,8 @@ public interface TransactionDao extends JpaRepository<TransactionsEntity, UUID>{
                   AND tx.quantity > 0
                   AND t.portfolioId = :pid
                   AND t.symbol = :symbol
+                  AND t.timestamp < :timestamp
                 ORDER BY t.timestamp ASC
             """)
-    List<TransactionsEntity> findBuyOrdersFIFO(UUID pid, String symbol,TradeSide side);
+    List<TransactionsEntity> findBuyOrdersFIFO(UUID pid, String symbol,TradeSide side,LocalDateTime timestamp);
 }

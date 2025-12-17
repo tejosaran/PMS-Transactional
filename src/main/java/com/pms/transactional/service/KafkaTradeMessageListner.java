@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 
 import com.pms.transactional.TradeProto;
 import com.pms.transactional.config.BufferConfig;
 import com.pms.transactional.dao.TradesDao;
+import com.pms.transactional.dto.TradeRecord;
 import com.pms.transactional.mapper.TradeMapper;
 
 @Service
@@ -22,18 +24,24 @@ public class KafkaTradeMessageListner {
     Logger logger = LoggerFactory.getLogger(KafkaMessageListner.class);
 
     @Autowired
-    private BlockingQueue<TradeProto> buffer;
+    private BlockingQueue<TradeRecord> buffer;
 
     @Autowired
     private BatchProcessor batchProcessor;
 
-    @RetryableTopic(attempts = "4", backoff = @Backoff(delay = 3000, multiplier = 2, maxDelay = 10000))
     @KafkaListener(topics = "valid-trades-topic", groupId = "trades", containerFactory = "tradekafkaListenerContainerFactory")
-    public void listen(TradeProto proto) {
-        buffer.offer(proto);
+    public void listen(TradeProto proto,Acknowledgment ack) {
+        buffer.offer(new TradeRecord(proto, ack));
         batchProcessor.checkAndFlush();
     }
     
+    @DltHandler
+    public void ListenDLT(TradeProto trade,Acknowledgment ack) {
+        logger.error("DLT reached for trade: {}", trade);
+        ack.acknowledge();
+    }
+
+
     // @KafkaListener(topics = "validatedtrades-topic", groupId = "trades", containerFactory = "tradekafkaListenerContainerFactory")
     // public void consume2(TradeProto trade) {
     //         logger.info("Consumer message (parsed): {}", trade);
@@ -45,10 +53,4 @@ public class KafkaTradeMessageListner {
     //             transactionService.handleSell(trade);
     //         }
     // }
-
-    @DltHandler
-    public void ListenDLT(TradeProto trade) {
-        logger.error("DLT reached for trade: {}", trade);
-    }
-
 }
