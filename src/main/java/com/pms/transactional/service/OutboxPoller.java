@@ -22,7 +22,7 @@ public class OutboxPoller {
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 600000)
     public void pollAndPublish() {
         List<OutboxEventEntity> pendingList = outboxDao.findByStatusOrderByCreatedAt("PENDING");
 

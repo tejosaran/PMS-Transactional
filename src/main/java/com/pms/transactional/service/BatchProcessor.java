@@ -42,18 +42,18 @@ public class BatchProcessor{
     private OutboxEventsDao outboxDao;
     @Autowired
     private TransactionService transactionService;
-    private static final int BATCH_SIZE = 1000;
-    private static final long FLUSH_INTERVAL_MS = 10000;
-    private long lastFlushTime = System.currentTimeMillis();
+    private static final int BATCH_SIZE = 10;
+    // private static final long FLUSH_INTERVAL_MS = 10000;
+    // private long lastFlushTime = System.currentTimeMillis();
 
     public void checkAndFlush() {
-        long now = System.currentTimeMillis();
+        // long now = System.currentTimeMillis();
         boolean sizeExceeded = buffer.size() >= BATCH_SIZE;
-        boolean timeExceeded = (now - lastFlushTime) >= FLUSH_INTERVAL_MS;
+        // boolean timeExceeded = (now - lastFlushTime) >= FLUSH_INTERVAL_MS;
 
-        if(sizeExceeded || timeExceeded){
+        if(sizeExceeded){
             flushBatch();
-            lastFlushTime = now;
+            // lastFlushTime = now;
         }
     }
 
