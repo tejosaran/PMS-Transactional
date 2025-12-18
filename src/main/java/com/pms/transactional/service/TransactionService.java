@@ -1,9 +1,13 @@
 package com.pms.transactional.service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +61,7 @@ public class TransactionService{
         buyTrade.setSide(TradeSide.BUY);
         buyTrade.setPricePerStock(BigDecimal.valueOf(trade.getPricePerStock()));
         buyTrade.setQuantity(trade.getQuantity());
-        buyTrade.setTimestamp(LocalDateTime.now());
+        buyTrade.setTimestamp(LocalDateTime.ofInstant(Instant.ofEpochSecond(trade.getTimestamp().getSeconds(), trade.getTimestamp().getNanos()),ZoneOffset.UTC));
         trades.add(buyTrade);
 
         TransactionsEntity buyTxn = new TransactionsEntity();
@@ -77,7 +81,7 @@ public class TransactionService{
         }
     }
 
-     public void processSell(TradeProto trade,List<TradesEntity> trades,List<TransactionsEntity> txns,List<OutboxEventEntity> outbox) {
+     public void processSell(TradeProto trade,Map<String, List<TransactionsEntity>> allBuys, List<TransactionsEntity> updatedBuys,List<TradesEntity> trades,List<TransactionsEntity> txns,List<OutboxEventEntity> outbox) {
 
         UUID tradeId = UUID.fromString(trade.getTradeId());
 
@@ -93,20 +97,19 @@ public class TransactionService{
         sellTrade.setSide(TradeSide.SELL);
         sellTrade.setPricePerStock(BigDecimal.valueOf(trade.getPricePerStock()));
         sellTrade.setQuantity(trade.getQuantity());
-        sellTrade.setTimestamp(LocalDateTime.now());
+        sellTrade.setTimestamp(LocalDateTime.ofInstant(Instant.ofEpochSecond(trade.getTimestamp().getSeconds(), trade.getTimestamp().getNanos()),ZoneOffset.UTC));
 
         trades.add(sellTrade);
 
-        List<TransactionsEntity> buyList =
-                transactionDao.findBuyOrdersFIFO(
-                        sellTrade.getPortfolioId(),
-                        sellTrade.getSymbol(),
-                        TradeSide.BUY,
-                        sellTrade.getTimestamp());
+        long qtyToSell = trade.getQuantity(); 
+        List<TransactionsEntity> allEligibleBuys = allBuys.get( sellTrade.getPortfolioId() + "_" + sellTrade.getSymbol()); 
+        if (allEligibleBuys == null) { throw new InvalidTradeException("No eligible buys for SELL " + tradeId); }
 
-        long qtyToSell = sellTrade.getQuantity();
+        List<TransactionsEntity> eligibleBuys = allEligibleBuys.stream()
+                                                                .filter(buy -> buy.getTrade().getTimestamp().isBefore(sellTrade.getTimestamp()))
+                                                                .collect(Collectors.toList());
 
-        long totalAvailable = buyList.stream()
+        long totalAvailable = eligibleBuys.stream()
                                      .mapToLong(TransactionsEntity::getQuantity)
                                      .sum();
 
@@ -118,14 +121,14 @@ public class TransactionService{
             );
         }
 
-        for (TransactionsEntity buyTx : buyList) {
+        for (TransactionsEntity buyTx : eligibleBuys) {
 
             if (qtyToSell <= 0) break;
             long available = buyTx.getQuantity();
             long matchedQty = Math.min(available, qtyToSell);
 
             buyTx.setQuantity(available - matchedQty);
-            transactionDao.save(buyTx);
+            updatedBuys.add(buyTx);
 
             TransactionsEntity sellTxn = new TransactionsEntity();
             sellTxn.setTrade(sellTrade);
