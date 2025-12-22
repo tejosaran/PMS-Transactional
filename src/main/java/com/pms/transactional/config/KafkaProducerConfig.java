@@ -61,4 +61,25 @@ public class KafkaProducerConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
+    @Bean
+    public Map<String, Object> outboxProducerConfigs() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "outbox-tx-");
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
+        configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return configProps;
+    }
+
+    @Bean
+    public ProducerFactory<String, ?> outboxProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(outboxProducerConfigs());
+    }
+
+    @Bean
+    public KafkaTemplate<String, ?> kafkaOutboxTemplate() {
+        return new KafkaTemplate<>(outboxProducerFactory());
+    }
 }

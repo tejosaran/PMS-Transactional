@@ -22,4 +22,4 @@ public interface TransactionDao extends JpaRepository<TransactionsEntity, UUID>{
                 ORDER BY t.timestamp ASC
             """)
     List<TransactionsEntity> findEligibleBuys(@Param("pids")List<UUID> pids, @Param("symbols")List<String> symbols,@Param("side")TradeSide side);
-}
+} 

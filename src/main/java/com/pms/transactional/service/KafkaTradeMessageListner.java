@@ -7,16 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 
 import com.pms.transactional.TradeProto;
-import com.pms.transactional.config.BufferConfig;
-import com.pms.transactional.dao.TradesDao;
 import com.pms.transactional.dto.TradeRecord;
-import com.pms.transactional.mapper.TradeMapper;
 
 @Service
 public class KafkaTradeMessageListner {

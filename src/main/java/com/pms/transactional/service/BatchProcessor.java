@@ -137,7 +137,7 @@ public class BatchProcessor{
 
         List<TransactionsEntity> eligibleBuys = transactionDao.findEligibleBuys(new ArrayList<>(portfolioIds),new ArrayList<>(symbols),TradeSide.BUY);
 
-        Map<String, List<TransactionsEntity>> buyMap = eligibleBuys.stream() .collect(Collectors.groupingBy( b -> b.getTrade().getPortfolioId() + "_" + b.getTrade().getSymbol(), LinkedHashMap::new, Collectors.toList() ));
+        Map<String, List<TransactionsEntity>> buyMap = eligibleBuys.stream().collect(Collectors.groupingBy( b -> b.getTrade().getPortfolioId() + "_" + b.getTrade().getSymbol(), LinkedHashMap::new, Collectors.toList() ));
 
         for (TradeRecord record : sellBatch){
             TradeProto proto = record.getTrade();

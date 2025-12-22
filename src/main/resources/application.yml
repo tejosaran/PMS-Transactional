@@ -21,16 +21,7 @@ spring:
   kafka:
     admin:
       enabled: false
-    producer:
-      # 🔴 REQUIRED for transactional outbox
-      transaction-id-prefix: outbox-tx-
-      acks: all
-
-      # ✅ Good defaults (recommended)
-      retries: 3
-      properties:
-        enable.idempotence: true
-
+      
 server:
   port: 8084
 

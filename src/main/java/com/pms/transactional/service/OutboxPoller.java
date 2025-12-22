@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -75,6 +76,7 @@ public class OutboxPoller {
     private OutboxEventsDao outboxDao;
 
     @Autowired
+    @Qualifier("kafkaOutboxTemplate")
     private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Scheduled(fixedRate = 20000)
