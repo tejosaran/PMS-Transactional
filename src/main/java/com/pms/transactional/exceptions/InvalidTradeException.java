@@ -1,7 +1,7 @@
 package com.pms.transactional.exceptions;
 
 public class InvalidTradeException extends RuntimeException{
-      private String errorMessage;
+    private String errorMessage;
 
     public InvalidTradeException(String message){
         super(message);
