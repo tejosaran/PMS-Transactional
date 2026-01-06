@@ -147,6 +147,7 @@ public class TransactionService{
                 outbox.add(event);
             }
         }
+        System.out.println();
     }
 
     public void handleInvalid(TradeProto trade,List<InvalidTradesEntity> invalidTrades, String errorMessage){

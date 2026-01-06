@@ -45,8 +45,6 @@ public class BatchProcessor{
     @Autowired
     private TransactionService transactionService;
     private static final int BATCH_SIZE = 10;
-    // private static final long FLUSH_INTERVAL_MS = 10000;
-    // private long lastFlushTime = System.currentTimeMillis();
 
     public void checkAndFlush() {
         // long now = System.currentTimeMillis();
@@ -78,28 +76,6 @@ public class BatchProcessor{
         processBuyBatch(buyBatch);
         processSellBatch(sellBatch);
 
-        // List<TradesEntity> trades = new ArrayList<>();
-        // List<TransactionsEntity> txns = new ArrayList<>();
-        // List<OutboxEventEntity> outbox = new ArrayList<>();
-
-        // for (TradeProto record : buyBatch){
-        //     TradeProto proto = record.getTrade();
-        //     try{
-        //         transactionService.processBuy(proto, trades, txns, outbox);
-        //     }
-        //     catch(InvalidTradeException ex){
-        //         //add to invalidtrades table 
-        //     }
-            
-        // }
-
-        // tradesDao.saveAll(trades);
-        // transactionDao.saveAll(txns);
-        // outboxDao.saveAll(outbox);
-
-        // batch.forEach(r -> r.getAck().acknowledge());
-
-        // System.out.println("Buy Batch Flushed: Trades=" + trades.size() + " Transactions=" + txns.size() + " Outbox=" + outbox.size());
     }
 
     @Transactional

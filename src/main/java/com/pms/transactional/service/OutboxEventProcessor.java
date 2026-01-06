@@ -17,7 +17,7 @@ import com.pms.transactional.entities.OutboxEventEntity;
 @Component
 public class OutboxEventProcessor {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private  KafkaTemplate<String, Object> kafkaTemplate;
 
     public OutboxEventProcessor(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
@@ -26,29 +26,23 @@ public class OutboxEventProcessor {
     public ProcessingResult process(List<OutboxEventEntity> events) {
 
         List<UUID> successfulIds = new ArrayList<>();
-
+            
         for (OutboxEventEntity event : events) {
             try {
                 TransactionProto proto =
                         TransactionProto.parseFrom(event.getPayload());
 
-                kafkaTemplate
-                        .send("transactions-topic", proto)
-                        .get(5, TimeUnit.SECONDS);
+                kafkaTemplate.send(
+                        "transactions-topic",
+                        event.getAggregateId().toString(),
+                        proto
+                );
 
                 successfulIds.add(event.getTransactionOutboxId());
 
-            }
-            // POISON PILL (bad data)
-            catch (InvalidProtocolBufferException | SerializationException e) {
+            } catch (InvalidProtocolBufferException e) {
                 return ProcessingResult.poisonPill(successfulIds, event);
-            }
-            // SYSTEM FAILURE (Kafka down / timeout)
-            catch (TimeoutException | InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return ProcessingResult.systemFailure(successfulIds);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 return ProcessingResult.systemFailure(successfulIds);
             }
         }
@@ -56,4 +50,5 @@ public class OutboxEventProcessor {
         return ProcessingResult.success(successfulIds);
     }
 }
+
 

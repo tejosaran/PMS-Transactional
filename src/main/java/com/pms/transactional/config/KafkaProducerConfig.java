@@ -25,8 +25,9 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.properties.schema.registry.url:http://localhost:8081}")
     private String schemaRegistryUrl;
 
+    // Topics
     @Bean
-    public NewTopic createTopic1() {
+    public NewTopic transactionsTopic() {
         return TopicBuilder.name("transactions-topic")
                 .partitions(5)
                 .replicas(1)
@@ -34,20 +35,21 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public NewTopic createTopic2() {
+    public NewTopic validatedTradesTopic() {
         return TopicBuilder.name("validatedtrades-topic")
                 .partitions(5)
                 .replicas(1)
                 .build();
     }
 
+    // Protobuf Producer Config
     @Bean
     public Map<String, Object> producerConfigs() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaProtobufSerializer.class);
-        props.put("schema.registry.url",schemaRegistryUrl);
+        props.put("schema.registry.url", schemaRegistryUrl);
         return props;
     }
 
@@ -61,6 +63,7 @@ public class KafkaProducerConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
+    // Outbox Producer-String serializer, transactional
     @Bean
     public Map<String, Object> outboxProducerConfigs() {
         Map<String, Object> configProps = new HashMap<>();
@@ -70,6 +73,7 @@ public class KafkaProducerConfig {
         configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         return configProps;
     }
 

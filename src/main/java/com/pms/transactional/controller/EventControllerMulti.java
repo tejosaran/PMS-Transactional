@@ -1,6 +1,7 @@
 package com.pms.transactional.controller;
 
 import java.time.ZoneOffset;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,38 +12,34 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pms.transactional.TradeProto;
-import static com.pms.transactional.TradeProto.newBuilder;
-import com.pms.transactional.TransactionProto;
 import com.pms.transactional.dto.TradeDTO;
-import com.pms.transactional.dto.TransactionDTO;
-import com.pms.transactional.service.KafkaMessagePublisher;
 import com.pms.transactional.service.KafkaTradeMessagePublisher;
 
 @RequestMapping
 @RestController
-
-public class EventController {
-
-    @Autowired
-    private KafkaMessagePublisher publisher;
+public class EventControllerMulti{
 
     @Autowired
     private KafkaTradeMessagePublisher tradePublisher;
 
-    @PostMapping("/trades/publish")
-    public ResponseEntity<?> publishTradeMessage(@RequestBody TradeDTO trade) {
-        System.out.println("Hello");
+    @PostMapping("/trades/publish/multi")
+    public ResponseEntity<?> publishTradeMessages(@RequestBody List<TradeDTO> trades) {
+        System.out.println("Publishing " + trades.size() + " trade messages");
         try {
-            TradeProto tradeProto = convertDTOToProto(trade);
-            tradePublisher.publishTradeMessage(
-                    trade.getPortfolioId().toString(),
-                    tradeProto);
+            for (TradeDTO trade : trades) {
+                TradeProto tradeProto = convertDTOToProto(trade);
 
-            return ResponseEntity.ok("Trade Message published successfully");
+                tradePublisher.publishTradeMessage(
+                        trade.getPortfolioId().toString(),
+                        tradeProto
+                );
+            }
+
+            return ResponseEntity.ok("Trade messages published successfully");
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to publish trade message: " + e.getMessage());
+                    .body("Failed to publish trade messages: " + e.getMessage());
         }
     }
 
@@ -56,10 +53,11 @@ public class EventController {
                 .setQuantity(trade.getQuantity())
                 .setTimestamp(
                         com.google.protobuf.Timestamp.newBuilder()
-                                .setSeconds(trade.getTimestamp().toEpochSecond(java.time.ZoneOffset.UTC))
+                                .setSeconds(trade.getTimestamp().toEpochSecond(ZoneOffset.UTC))
                                 .setNanos(trade.getTimestamp().getNano())
-                                .build())
+                                .build()
+                )
                 .build();
     }
-
 }
+

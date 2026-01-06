@@ -21,14 +21,14 @@ public class KafkaTradeMessageListner {
     Logger logger = LoggerFactory.getLogger(KafkaMessageListner.class);
 
     @Autowired
-    private BlockingQueue<List<TradeProto>> buffer;
+    private BlockingQueue<TradeProto> buffer;
 
     @Autowired
     private BatchProcessor batchProcessor;
 
     @KafkaListener(topics = "valid-trades-topic", groupId = "trades", containerFactory = "tradekafkaListenerContainerFactory")
-    public void listen(List<TradeProto> protoList) {
-        buffer.offer(new ArrayList<TradeProto>(protoList));
+    public void listen(List<TradeProto> trades) {
+        trades.forEach(buffer::offer);
         batchProcessor.checkAndFlush();
     }
     
@@ -37,16 +37,4 @@ public class KafkaTradeMessageListner {
         logger.error("DLT reached for trade: {}", trade);
     }
 
-
-    // @KafkaListener(topics = "validatedtrades-topic", groupId = "trades", containerFactory = "tradekafkaListenerContainerFactory")
-    // public void consume2(TradeProto trade) {
-    //         logger.info("Consumer message (parsed): {}", trade);
-    //         if("BUY".equalsIgnoreCase(trade.getSide())){
-    //             System.out.println("It is a buy trade");
-    //             transactionService.handleBuy(trade);
-    //         }else if("SELL".equalsIgnoreCase(trade.getSide())){
-    //             System.out.println("It is a sell trade");
-    //             transactionService.handleSell(trade);
-    //         }
-    // }
 }

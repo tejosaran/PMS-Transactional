@@ -12,13 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pms.transactional.entities.OutboxEventEntity;
 
-
-// @Repository
-// public interface OutboxEventsDao extends JpaRepository<OutboxEventEntity, UUID>{
-//     List<OutboxEventEntity> findByStatusOrderByCreatedAt(String status);
-//     boolean existsByAggregateId(UUID aggregateId);
-// }
-
 @Repository
 public interface OutboxEventsDao extends JpaRepository<OutboxEventEntity, UUID> {
 
@@ -30,7 +23,6 @@ public interface OutboxEventsDao extends JpaRepository<OutboxEventEntity, UUID> 
 
     @Modifying
     @Transactional
-    @Query("update OutboxEventEntity e set e.status = 'SENT' where e.id in :ids")
+    @Query("update OutboxEventEntity e set e.status = 'SENT' where e.transactionOutboxId in :ids")
     void markAsSent(List<UUID> ids);
-
 }

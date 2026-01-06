@@ -15,18 +15,6 @@ public class TransactionMapper{
 
     @Autowired
     TradeMapper tradeMapper;
-
-    // public TransactionsEntity toEntity(TransactionProto transaction){
-    //     TransactionsEntity entity = new TransactionsEntity();
-    //     entity.setBuyPrice(new java.math.BigDecimal(transaction.getSellPrice()));
-    //     entity.setRemainingQuantity(transaction.getRemainingQuantity());
-    //     entity.setSellQuantity(transaction.getSellQuantity());
-
-    //     TradesEntity trade = tradeMapper.toEntity(transaction.getTrade());
-        
-    //     entity.setTrade(trade);
-    //     return entity;
-    // }
     
     public TransactionProto toProto(TransactionsEntity transaction){
         TradeProto trade = TradeProto.newBuilder()

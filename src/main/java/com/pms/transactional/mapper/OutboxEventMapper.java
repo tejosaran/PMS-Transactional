@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.pms.transactional.TransactionProto;
 import com.pms.transactional.entities.OutboxEventEntity;
 import com.pms.transactional.entities.TransactionsEntity;
 
@@ -13,12 +14,16 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class OutboxEventMapper{
+    
+    public OutboxEventEntity toEntity(
+            TransactionsEntity txn,
+            TransactionProto proto) {
 
-    public OutboxEventEntity toEntity(TransactionsEntity transaction) throws JsonProcessingException{
         OutboxEventEntity entity = new OutboxEventEntity();
-        entity.setAggregateId(transaction.getTransactionId());
-        entity.setCreatedAt(LocalDateTime.now());
+        entity.setAggregateId(txn.getTransactionId());
+        entity.setPayload(proto.toByteArray());
         entity.setStatus("PENDING");
+        entity.setCreatedAt(LocalDateTime.now());
         return entity;
     }
     
