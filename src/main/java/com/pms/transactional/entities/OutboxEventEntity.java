@@ -27,6 +27,9 @@ public class OutboxEventEntity {
     @Column(name = "aggregate_id")
     private UUID aggregateId;
 
+    @Column(name = "portfolio_id", nullable = false)
+    private UUID portfolioId;
+
     @Column(name = "payload", nullable = false)
     private byte[] payload;
 

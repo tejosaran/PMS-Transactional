@@ -17,26 +17,24 @@ import com.pms.transactional.entities.OutboxEventEntity;
 @Component
 public class OutboxEventProcessor {
 
-    private  KafkaTemplate<String, Object> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
-    public OutboxEventProcessor(KafkaTemplate<String, Object> kafkaTemplate){
+    public OutboxEventProcessor(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public ProcessingResult process(List<OutboxEventEntity> events){
+    public ProcessingResult process(List<OutboxEventEntity> events) {
 
         List<UUID> successfulIds = new ArrayList<>();
-            
+
         for (OutboxEventEntity event : events) {
             try {
-                TransactionProto proto =
-                        TransactionProto.parseFrom(event.getPayload());
+                TransactionProto proto = TransactionProto.parseFrom(event.getPayload());
 
                 kafkaTemplate.send(
                         "transactions-topic",
-                        event.getAggregateId().toString(),
-                        proto
-                );
+                        event.getPortfolioId().toString(),
+                        proto);
 
                 successfulIds.add(event.getTransactionOutboxId());
 
@@ -50,5 +48,3 @@ public class OutboxEventProcessor {
         return ProcessingResult.success(successfulIds);
     }
 }
-
-
