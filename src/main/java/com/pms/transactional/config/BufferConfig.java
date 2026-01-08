@@ -14,18 +14,8 @@ import com.pms.transactional.dto.TradeRecord;
 @Configuration
 public class BufferConfig{
     @Bean
-public BlockingQueue<TradeProto> protoBuffer() {
-    return new LinkedBlockingQueue<>(20000);
-}
-    @Bean
-public BlockingQueue<List<TradeProto>> protoListBuffer() {
-    return new LinkedBlockingQueue<>(20000);
-}
-
-
-@Bean
-public BlockingQueue<TradeRecord> recordBuffer() {
-    return new LinkedBlockingQueue<>(50000);
-}
+    public BlockingQueue<TradeProto> protoBuffer() {
+        return new LinkedBlockingQueue<>(150000);
+    }
 
 }

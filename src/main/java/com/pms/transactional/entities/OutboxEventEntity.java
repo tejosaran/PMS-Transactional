@@ -20,7 +20,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class OutboxEventEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "transaction_outbox_id")
     private UUID transactionOutboxId;
 

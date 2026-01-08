@@ -21,12 +21,7 @@ public class InvalidTradesEntity {
    
     @Id
     @Column(name = "invalid_trade_id", nullable = false)
-    private long invalidTradeId;
-
-    @PrePersist
-    public void generateRandomId(){
-        this.invalidTradeId = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
-    }
+    private UUID invalidTradeId;
 
     @Column(name="aggregate_id")
     private UUID aggregateId;

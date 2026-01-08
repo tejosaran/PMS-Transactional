@@ -2,6 +2,7 @@ package com.pms.transactional.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,8 +42,8 @@ public class BatchProcessor implements SmartLifecycle{
     @Autowired
     private TransactionService transactionService;
 
-    private static final int BATCH_SIZE = 10;
-    private static final long FLUSH_INTERVAL_MS = 10000;
+    private static final int BATCH_SIZE = 5000;
+    private static final long FLUSH_INTERVAL_MS = 5000;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private boolean isRunning = false;
@@ -56,17 +57,13 @@ public class BatchProcessor implements SmartLifecycle{
     public synchronized void flushBatch(){
         if(buffer.isEmpty()) return;
 
-        while(!buffer.isEmpty()){
-            List<TradeProto> batch = new ArrayList<>(BATCH_SIZE);
-            buffer.drainTo(batch, BATCH_SIZE);
+        List<TradeProto> batch = new ArrayList<>(BATCH_SIZE);
+        buffer.drainTo(batch, BATCH_SIZE);
 
-            if(batch.isEmpty()) break;
+        Map<String, List<TradeProto>> grouped = batch.stream().collect(Collectors.groupingBy(TradeProto::getSide));
 
-            List<TradeProto> buyBatch = batch.stream().filter(record->(record.getSide()).equals("BUY")).collect(Collectors.toList());
-            List<TradeProto> sellBatch = batch.stream().filter(record->(record.getSide()).equals("SELL")).collect(Collectors.toList());
-
-            processUnifiedBatch(buyBatch, sellBatch);
-        }
+        processUnifiedBatch(grouped.getOrDefault("BUY", List.of()), grouped.getOrDefault("SELL", List.of()));
+        
         
     }
 
