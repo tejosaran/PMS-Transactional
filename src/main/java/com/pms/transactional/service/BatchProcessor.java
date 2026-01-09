@@ -132,7 +132,7 @@ public class BatchProcessor implements SmartLifecycle{
         MessageListenerContainer container = kafkaListenerEndpointRegistry.getListenerContainer(CONSUMER_ID);
         if(container != null){
             container.pause();
-            logger.warn("Kafka Consumer stopped. Starting background probe daemon...");
+            logger.warn("Kafka Consumer paused. Starting background probe daemon...");
         }
 
         startDaemon();

@@ -23,7 +23,7 @@ public class OutboxEventEntity {
     @Column(name = "transaction_outbox_id")
     private UUID transactionOutboxId;
 
-    @Column(name = "aggregate_id")
+    @Column(name = "aggregate_id", unique = true)
     private UUID aggregateId;
 
     @Column(name = "portfolio_id", nullable = false)

@@ -33,14 +33,14 @@ public class BatchInsertDao {
     }
 
     public void batchInsertTransactions(List<TransactionsEntity> batchTransactions){
-        String insertQuery = " INSERT INTO TRANSACTIONS(transaction_id,trade_id,buy_price,quantity) " + 
+        String insertQuery = " INSERT INTO TRANSACTIONS(transaction_id,buy_price,quantity,trade_id) " + 
                             "VALUES (?,?,?,?) ON CONFLICT(transaction_id) DO NOTHING ";
 
         jdbcTemplate.batchUpdate(insertQuery,batchTransactions,500,(preparedStatement,transaction)->{
             preparedStatement.setObject(1,transaction.getTransactionId());
-            preparedStatement.setObject(2,transaction.getTrade().getTradeId());
-            preparedStatement.setBigDecimal(3, transaction.getBuyPrice());
-            preparedStatement.setLong(4, transaction.getQuantity());
+            preparedStatement.setObject(4,transaction.getTrade().getTradeId());
+            preparedStatement.setBigDecimal(2, transaction.getBuyPrice());
+            preparedStatement.setLong(3, transaction.getQuantity());
         });
     }
 
@@ -59,7 +59,7 @@ public class BatchInsertDao {
     }
 
     public void batchInsertInvalidTrades(List<InvalidTradesEntity> invalidTrades){
-        String insertQuery = "INSERT INTO INVALID_TRADES(invalid_trade_id,aggregate_id,payload,errorMessage)" +
+        String insertQuery = "INSERT INTO INVALID_TRADES(invalid_trade_id,aggregate_id,payload,errorMessage) " +
                              "VALUES(?,?,?,?) ON CONFLICT(aggregate_id) DO NOTHING";
 
         jdbcTemplate.batchUpdate(insertQuery,invalidTrades,500,(preparedStatement,invalidTrade)->{
