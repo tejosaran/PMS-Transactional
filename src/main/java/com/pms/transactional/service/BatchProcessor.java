@@ -43,7 +43,7 @@ public class BatchProcessor implements SmartLifecycle{
     private TransactionService transactionService;
 
     private static final int BATCH_SIZE = 5000;
-    private static final long FLUSH_INTERVAL_MS = 5000;
+    private static final long FLUSH_INTERVAL_MS = 10000;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private boolean isRunning = false;
@@ -63,7 +63,6 @@ public class BatchProcessor implements SmartLifecycle{
         Map<String, List<TradeProto>> grouped = batch.stream().collect(Collectors.groupingBy(TradeProto::getSide));
 
         processUnifiedBatch(grouped.getOrDefault("BUY", List.of()), grouped.getOrDefault("SELL", List.of()));
-        
         
     }
 
@@ -132,7 +131,7 @@ public class BatchProcessor implements SmartLifecycle{
 
         MessageListenerContainer container = kafkaListenerEndpointRegistry.getListenerContainer(CONSUMER_ID);
         if(container != null){
-            container.stop();
+            container.pause();
             logger.warn("Kafka Consumer stopped. Starting background probe daemon...");
         }
 
@@ -147,7 +146,7 @@ public class BatchProcessor implements SmartLifecycle{
 
                 MessageListenerContainer container = kafkaListenerEndpointRegistry
                         .getListenerContainer(CONSUMER_ID);
-                if(container != null) container.start();
+                if(container != null) container.resume();
 
                 synchronized(this){
                     isRecovering = false;
