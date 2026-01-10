@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import com.pms.transactional.TradeProto;
 
-import jakarta.transaction.Transactional;
 
 @Service
 public class BatchProcessor implements SmartLifecycle{
@@ -60,10 +59,20 @@ public class BatchProcessor implements SmartLifecycle{
         List<TradeProto> batch = new ArrayList<>(BATCH_SIZE);
         buffer.drainTo(batch, BATCH_SIZE);
 
-        Map<String, List<TradeProto>> grouped = batch.stream().collect(Collectors.groupingBy(TradeProto::getSide));
-
-        processUnifiedBatch(grouped.getOrDefault("BUY", List.of()), grouped.getOrDefault("SELL", List.of()));
-        
+        try{
+            Map<String, List<TradeProto>> grouped = batch.stream().collect(Collectors.groupingBy(TradeProto::getSide));
+            transactionService.processUnifiedBatch(grouped.getOrDefault("BUY", List.of()), grouped.getOrDefault("SELL", List.of()));
+        }
+        catch(DataAccessResourceFailureException e) {
+            logger.error("DB Connection failure. Pausing consumer.");
+            handleDatabaseDown();
+            throw e;
+        }
+        catch(DataIntegrityViolationException e){
+            String rootMsg = (e.getRootCause() != null) ? e.getRootCause().getMessage() : e.getMessage();
+            logger.error("DATA ERROR: Database rejected the batch. Reason: {}", rootMsg);
+            throw e;
+        }   
     }
 
     @Override
@@ -86,7 +95,6 @@ public class BatchProcessor implements SmartLifecycle{
         if(!buffer.isEmpty()){
             flushBatch();
         }
-        
         this.isRunning = false;
         callback.run();
     }
@@ -97,24 +105,6 @@ public class BatchProcessor implements SmartLifecycle{
     @Override
     public int getPhase(){
         return Integer.MAX_VALUE;
-    }
-
-    @Transactional
-    public void processUnifiedBatch(List<TradeProto> buyBatch, List<TradeProto> sellBatch) {
-        try{
-            if (!buyBatch.isEmpty()) transactionService.processBuyBatch(buyBatch);
-            if (!sellBatch.isEmpty()) transactionService.processSellBatch(buyBatch,sellBatch);
-        } 
-        catch(DataIntegrityViolationException e){
-            String rootMsg = (e.getRootCause() != null) ? e.getRootCause().getMessage() : e.getMessage();
-            logger.error("DATA ERROR: Database rejected the batch. Reason: {}", rootMsg);
-            throw e;
-        }
-        catch(DataAccessResourceFailureException e){
-            logger.error("Database Connectivity issue. Pausing the consumer");
-            handleDatabaseDown();
-            throw e;
-        }
     }
 
     private boolean isRecovering = false;
@@ -134,7 +124,6 @@ public class BatchProcessor implements SmartLifecycle{
             container.pause();
             logger.warn("Kafka Consumer paused. Starting background probe daemon...");
         }
-
         startDaemon();
     }
         
