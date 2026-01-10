@@ -73,6 +73,11 @@ public class BatchProcessor implements SmartLifecycle{
             logger.error("DATA ERROR: Database rejected the batch. Reason: {}", rootMsg);
             throw e;
         }   
+        catch(Exception e){
+            String rootMsg = e.getMessage();
+            logger.error("Exception occured", rootMsg);
+            throw e;
+        }
     }
 
     @Override

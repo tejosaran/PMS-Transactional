@@ -23,7 +23,7 @@ public class InvalidTradesEntity {
     @Column(name = "invalid_trade_id", nullable = false)
     private UUID invalidTradeId;
 
-    @Column(name="aggregate_id")
+    @Column(name="aggregate_id", unique = true)
     private UUID aggregateId;
 
     @Column(name = "payload")

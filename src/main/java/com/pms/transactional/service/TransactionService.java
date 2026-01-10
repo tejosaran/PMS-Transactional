@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.pms.transactional.TradeProto;
 import com.pms.transactional.TransactionProto;
@@ -29,10 +30,9 @@ import com.pms.transactional.entities.OutboxEventEntity;
 import com.pms.transactional.entities.TradesEntity;
 import com.pms.transactional.entities.TransactionsEntity;
 import com.pms.transactional.enums.TradeSide;
-import com.pms.transactional.exceptions.InvalidTradeException;
 import com.pms.transactional.mapper.TransactionMapper;
 
-import jakarta.transaction.Transactional;
+
 
 @Service
 public class TransactionService {
@@ -55,6 +55,7 @@ public class TransactionService {
         List<OutboxEventEntity> allOutboxEvents = new ArrayList<>();
         List<InvalidTradesEntity> allInvalidTrades = new ArrayList<>();
         Map<String, List<TransactionsEntity>> currentBatchInventory = new HashMap<>();
+        Set<TransactionsEntity> modifiedDbBuys = new LinkedHashSet<>();
         if (!buyBatch.isEmpty()) {
             for (TradeProto newBuyTrade : buyBatch) {
                 TransactionsEntity buyTx = processBuy(newBuyTrade, allTrades, allTransactions, allOutboxEvents);
@@ -75,19 +76,16 @@ public class TransactionService {
 
             List<TransactionsEntity> eligibleBuys = transactionDao.findEligibleBuys(new ArrayList<>(portfolioIds),
                 new ArrayList<>(symbols), TradeSide.BUY);
-
-            Set<TransactionsEntity> modifiedDbBuys = new LinkedHashSet<>();
+            
 
             for (TradeProto sellProto : sellBatch) {
-                try {
-                    processSell(sellProto, eligibleBuys, currentBatchInventory, 
-                                        allTrades, allTransactions, allOutboxEvents, modifiedDbBuys);
-                } catch (InvalidTradeException e) {
-                    logger.warn("Trade validation failed: {}", e.getMessage());
-                    handleInvalid(sellProto, allInvalidTrades, e.getErrorMessage());
-                }
-            }
+                processSell(sellProto, eligibleBuys, currentBatchInventory, 
+                                    allTrades, allTransactions, allOutboxEvents, modifiedDbBuys,allInvalidTrades);
 
+            }
+        }
+            logger.info("Processing completed.. saving to database");
+            
             if (!allTrades.isEmpty()) batchInsertDao.batchInsertTrades(allTrades);
             if (!allTransactions.isEmpty()) batchInsertDao.batchInsertTransactions(allTransactions);
             if (!allOutboxEvents.isEmpty()) batchInsertDao.batchInsertOutboxEvents(allOutboxEvents);
@@ -95,11 +93,12 @@ public class TransactionService {
             if (!modifiedDbBuys.isEmpty()) {
                     batchInsertDao.batchUpdateBuyQuantities(new ArrayList<>(modifiedDbBuys));
                 }
-
+            logger.info("invalid trades started ...");
             if (!allInvalidTrades.isEmpty()) {
                 batchInsertDao.batchInsertInvalidTrades(allInvalidTrades);
             }
-        }
+
+            
         logger.info("Batch Processed: Trades={}, Transactions={}, Invalid={}", 
             allTrades.size(), allTransactions.size(), allInvalidTrades.size());
     }
@@ -145,7 +144,7 @@ public class TransactionService {
         return buyTxn;
     }
 
-    public void processSell(TradeProto trade,List<TransactionsEntity> dbInventory, Map<String, List<TransactionsEntity>> newBuyTransactions,List<TradesEntity> trades, List<TransactionsEntity> transactions,List<OutboxEventEntity> outboxEvents,Set<TransactionsEntity> modifiedDbBuys) {
+    public void processSell(TradeProto trade,List<TransactionsEntity> dbInventory, Map<String, List<TransactionsEntity>> newBuyTransactions,List<TradesEntity> trades, List<TransactionsEntity> transactions,List<OutboxEventEntity> outboxEvents,Set<TransactionsEntity> modifiedDbBuys,List<InvalidTradesEntity> invalidTrades) {
     
         UUID tradeId = UUID.fromString(trade.getTradeId());
         UUID portfolioId = UUID.fromString(trade.getPortfolioId());
@@ -167,7 +166,8 @@ public class TransactionService {
         inventory.sort(Comparator.comparing(b -> b.getTrade().getTimestamp()));
 
         if(inventory == null || inventory.isEmpty()){
-            throw new InvalidTradeException("No eligible buys for SELL " + tradeId);
+            handleInvalid(trade, invalidTrades, "No eligible previous buys avaliable for this sell trade");
+            return;
         }
         
         long totalAvailable = inventory.stream()
@@ -175,7 +175,8 @@ public class TransactionService {
             .mapToLong(TransactionsEntity::getQuantity).sum();
 
         if (totalAvailable < qtyToSell) {
-            throw new InvalidTradeException("Insufficient quantity for " + key + ". Needed " + qtyToSell);
+            handleInvalid(trade, invalidTrades, "Insufficient quantity for " + key + ". Needed " + qtyToSell);
+            return;
         }
 
         TradesEntity sellTrade = new TradesEntity();
